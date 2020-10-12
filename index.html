@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <meta charset="utf8" />
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <html>
   <title>beeps every 30 seconds</title>
   <body>
-      <style>
-          #muteButton {
-              width: 8rem;
-              height: 8rem;
-          }
-      </style>
+    <style>
+      #muteButton {
+        width: 8rem;
+        height: 8rem;
+      }
+    </style>
     <h1>Current second number: <span id="timestamp"></span></h1>
     <h2>Beeping in <span id="time-remaining"></span></h2>
 
@@ -37,6 +37,7 @@
         } else {
           muteButton.innerHTML = "🔊 Currently unmuted. Click this to mute.";
           silentLoop.play();
+          beep.play();
         }
       });
 
