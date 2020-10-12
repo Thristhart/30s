@@ -37,7 +37,10 @@
         } else {
           muteButton.innerHTML = "🔊 Currently unmuted. Click this to mute.";
           silentLoop.play();
-          beep.play();
+          beep.src = "./empty.wav";
+          beep.play().then(() => {
+            beep.src = "./beep.wav"
+          })
         }
       });
 
