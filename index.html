@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <title>beeps every 30 seconds</title>
+  <body>
+    <h1>Current second number: <span id="timestamp"></span></h1>
+    <h2>Beeping in <span id="time-remaining"></span></h2>
+    <script src="https://widget.time.is/t.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/howler@2.2.0/dist/howler.min.js"
+      integrity="sha256-Tp/HPdYebMPmgPDCAs8Et4j+VUKuOWmAZdhegRS4O4g="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      const sound = new Howl({
+        src: ["beep.wav"],
+      });
+      function renderCallback(renderedTimestamp) {
+        const time = parseInt(
+          decodeURIComponent(renderedTimestamp).match(/\>(\d+)\</)[1]
+        );
+        if (time === 0 || time === 30) {
+            sound.play();
+        }
+        remainingSpan.innerHTML = 30 - (time % 30);
+      }
+      const remainingSpan = document.getElementById("time-remaining");
+
+      time_is_widget.init({
+        timestamp: {
+          id: "Seattle_z14e",
+          callback: "renderCallback",
+          time_format: "seconds",
+          template: "TIME",
+        },
+      });
+    </script>
+
+    Time synchronization provided by
+    <a href="https://time.is/" id="time_is_link" rel="nofollow">time.is</a>
+  </body>
+</html>
