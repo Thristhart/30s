@@ -1,9 +1,19 @@
 <!DOCTYPE html>
+<meta charset="utf8" />
 <html>
   <title>beeps every 30 seconds</title>
   <body>
     <h1>Current second number: <span id="timestamp"></span></h1>
     <h2>Beeping in <span id="time-remaining"></span></h2>
+    
+    
+    <button id="muteButton">🔇 Currently muted. Click this to enable.</button>
+
+    Time synchronization provided by
+    <a href="https://time.is/" id="time_is_link" rel="nofollow">time.is</a>
+
+
+
     <script src="https://widget.time.is/t.js"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/howler@2.2.0/dist/howler.min.js"
@@ -13,17 +23,35 @@
     <script>
       const sound = new Howl({
         src: ["beep.wav"],
+        mute: true,
       });
+      const remainingSpan = document.getElementById("time-remaining");
+      const muteButton = document.getElementById("muteButton");
+
+    let isMuted = true;
+      muteButton.addEventListener("click", () => {
+        isMuted = !isMuted;
+            sound.mute(isMuted);
+        if(isMuted) {
+            muteButton.innerHTML = "🔇 Currently muted. Click this to unmute.";
+        }
+        else {
+            muteButton.innerHTML = "🔊 Currently unmuted. Click this to mute.";
+        }
+      })
+
+
       function renderCallback(renderedTimestamp) {
         const time = parseInt(
           decodeURIComponent(renderedTimestamp).match(/\>(\d+)\</)[1]
         );
         if (time === 0 || time === 30) {
-            sound.play();
+            if(!isMuted) {
+                sound.play();
+            }
         }
         remainingSpan.innerHTML = 30 - (time % 30);
       }
-      const remainingSpan = document.getElementById("time-remaining");
 
       time_is_widget.init({
         timestamp: {
@@ -34,8 +62,5 @@
         },
       });
     </script>
-
-    Time synchronization provided by
-    <a href="https://time.is/" id="time_is_link" rel="nofollow">time.is</a>
   </body>
 </html>
