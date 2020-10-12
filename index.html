@@ -15,18 +15,20 @@
 
     <button id="muteButton">🔇 Currently muted. Click this to enable.</button>
 
-    <audio id="beep" src="beep.wav"></audio>
     <audio id="silentLoop" src="empty.wav" loop></audio>
 
     Time synchronization provided by
     <a href="https://time.is/" id="time_is_link" rel="nofollow">time.is</a>
 
     <script src="https://widget.time.is/t.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.min.js"></script>
+
     <script>
       const remainingSpan = document.getElementById("time-remaining");
       const muteButton = document.getElementById("muteButton");
       const silentLoop = document.getElementById("silentLoop");
-      const beep = document.getElementById("beep");
+
+      const osc = new Tone.Oscillator().toDestination();
 
       let isMuted = true;
       muteButton.addEventListener("click", () => {
@@ -37,10 +39,6 @@
         } else {
           muteButton.innerHTML = "🔊 Currently unmuted. Click this to mute.";
           silentLoop.play();
-          beep.src = "./empty.wav";
-          beep.play().then(() => {
-            beep.src = "./beep.wav"
-          })
         }
       });
 
@@ -50,7 +48,7 @@
         );
         if (time === 0 || time === 30) {
           if (!isMuted) {
-            beep.play();
+            osc.start().stop("+0.5");
           }
         }
         remainingSpan.innerHTML = 30 - (time % 30);
