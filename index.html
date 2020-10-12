@@ -4,21 +4,76 @@
 <html>
   <title>beeps every 30 seconds</title>
   <body>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      body {
+        background-color: #11aaaa;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        font-family: "Roboto", sans-serif;
+        align-items: center;
+        justify-content: space-around;
+        height: 100vh;
+        overflow: hidden;
+      }
+      h2 {
+        font-size: 8vmin;
+        margin: 0;
+        margin-top: 2vmin;
+      }
+      #timestamp {
+        display: none;
+      }
+      #time-remaining {
+        font-size: 30vmin;
+      }
+      #secondsLabel {
+        font-size: 8vmin;
+      }
+      #time_is_link {
+        color: white;
+      }
+      footer {
+        margin-bottom: 2vmin;
+      }
       #muteButton {
-        width: 8rem;
-        height: 8rem;
+        width: 50vmin;
+        height: 30vmin;
+        font-size: 4vmin;
+        background: none;
+        color: white;
+        font-family: "Roboto", sans-serif;
+        border: 2px solid white;
+        border-radius: 4vmin;
+        outline: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      #muteButton:focus {
+        border: 2px solid gold;
       }
     </style>
-    <h1>Current second number: <span id="timestamp"></span></h1>
-    <h2>Beeping in <span id="time-remaining"></span></h2>
+    <span id="timestamp"></span>
+    <h2>Beeping in</h2>
+    <span id="time-remaining">30</span>
+    <label id="secondsLabel">seconds</label>
 
-    <button id="muteButton">🔇 Currently muted. Click this to enable.</button>
+    <button id="muteButton">
+      <span class="muteicon">🔇</span> Currently muted. Click this to enable.
+    </button>
 
     <audio id="silentLoop" src="empty.wav" loop></audio>
 
-    Time synchronization provided by
-    <a href="https://time.is/" id="time_is_link" rel="nofollow">time.is</a>
+    <footer>
+      Time synchronization provided by
+      <a href="https://time.is/" id="time_is_link" rel="nofollow">time.is</a>
+    </footer>
 
     <script src="https://widget.time.is/t.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.min.js"></script>
@@ -34,10 +89,12 @@
       muteButton.addEventListener("click", () => {
         isMuted = !isMuted;
         if (isMuted) {
-          muteButton.innerHTML = "🔇 Currently muted. Click this to unmute.";
+          muteButton.innerHTML =
+            "<span class='muteicon'>🔇</span> Currently muted. Click this to unmute.";
           silentLoop.pause();
         } else {
-          muteButton.innerHTML = "🔊 Currently unmuted. Click this to mute.";
+          muteButton.innerHTML =
+            "<span class='muteicon'>🔊</span> Currently unmuted. Click this to mute.";
           silentLoop.play();
           Tone.start();
         }
