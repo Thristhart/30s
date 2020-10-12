@@ -31,7 +31,6 @@
       let isMuted = true;
       muteButton.addEventListener("click", () => {
         isMuted = !isMuted;
-        sound.mute(isMuted);
         if (isMuted) {
           muteButton.innerHTML = "🔇 Currently muted. Click this to unmute.";
           silentLoop.pause();
