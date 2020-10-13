@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <html>
   <title>beeps every 30 seconds</title>
-  <body>
+  <body data-settings-visible="false">
     <link
       href="https://fonts.googleapis.com/css2?family=Roboto:wght@900&display=swap"
       rel="stylesheet"
@@ -12,17 +12,104 @@
       body {
         background-color: #11aaaa;
         color: white;
-        display: flex;
-        flex-direction: column;
         font-family: "Roboto", sans-serif;
-        align-items: center;
-        justify-content: space-around;
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
         overflow: hidden;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr;
+      }
+      #countdown {
+        display: flex;
+        flex-direction: column;
+
+        align-items: center;
+        justify-content: space-around;
+        transform: translateX(25vw);
+        transition: transform ease-in 300ms;
+      }
+      #settings {
+        display: flex;
+        flex-direction: column;
+
+        align-items: flex-start;
+        transform: translateX(50vw);
+        background-color: #11aaaa;
+
+        font-size: 9vmin;
+      }
+      [data-settings-visible="true"] #settings {
+        transform: translateX(0);
+      }
+      [data-settings-visible="true"] #countdown {
+        transform: translateX(0);
+      }
+      #countdown,
+      #settings {
+        transition: transform ease-in 300ms;
+      }
+
+      #beepTargets input {
+        background: none;
+        color: white;
+        outline: none;
+        border: 1px solid white;
+        width: 12vmin;
+        height: 12vmin;
+        font-size: 8vmin;
+        text-align: center;
+        margin-right: 1vmin;
+      }
+      #beepTargets input:focus {
+        border: 1px solid gold;
+      }
+      #settings button:focus {
+        border: 1px solid gold;
+      }
+      #addBeepTarget,
+      #removeBeepTarget {
+        background: none;
+        color: white;
+        outline: none;
+        border: 1px solid white;
+        width: 12vmin;
+        height: 12vmin;
+        font-size: 8vmin;
+        text-align: center;
+        margin-top: 2vmin;
+        border-radius: 50%;
+      }
+      #volume {
+        display: flex;
+        flex-direction: column;
+      }
+      #settings h3 {
+        margin-bottom: 0;
+      }
+      #volume .warning {
+        font-size: 1rem;
+      }
+      #toggleSettings {
+        outline: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        color: white;
+        font-family: "Roboto", sans-serif;
+        border: 2px solid white;
+        font-size: 4vmin;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+      }
+      #toggleSettings:focus {
+        border: 2px solid gold;
       }
       h2 {
         font-size: 8vmin;
@@ -40,9 +127,14 @@
       }
       #time_is_link {
         color: white;
+        margin-left: 0.3rem;
       }
       footer {
         margin-bottom: 2vmin;
+        grid-row: 2/2;
+        grid-column: 1/3;
+        display: flex;
+        justify-content: center;
       }
       #muteButton {
         width: 50vmin;
@@ -62,15 +154,58 @@
       #muteButton:focus {
         border: 2px solid gold;
       }
-    </style>
-    <span id="timestamp"></span>
-    <h2>Beeping in</h2>
-    <span id="time-remaining">30</span>
-    <label id="secondsLabel">seconds</label>
 
-    <button id="muteButton">
-      <span class="muteicon">🔇</span> Currently muted. Click this to enable.
-    </button>
+      @media (max-aspect-ratio: 16/9) {
+        body {
+          grid-template-columns: 100vw 100vw;
+        }
+        footer {
+          grid-column: 1/1;
+        }
+        #countdown {
+          transform: translateX(0);
+        }
+        [data-settings-visible="true"] #settings {
+          transform: translateX(-100vw);
+        }
+        [data-settings-visible="true"] #countdown {
+          transform: translateX(-100vw);
+        }
+      }
+    </style>
+    <section id="countdown">
+      <span id="timestamp"></span>
+      <h2>Beeping in</h2>
+      <span id="time-remaining">30</span>
+      <label id="secondsLabel">seconds</label>
+
+      <button id="muteButton">
+        <span class="muteicon">🔇</span> Currently muted. Click this to enable.
+      </button>
+    </section>
+    <section id="settings">
+      <section id="beepTargetList">
+        <h3>Beep on these second numbers:</h3>
+        <form id="beepTargets"></form>
+        <button id="addBeepTarget">+</button>
+        <button id="removeBeepTarget">-</button>
+      </section>
+
+      <section id="volume">
+        <h3>Volume:</h3>
+
+        <span class="warning">(warning, the high end is very loud)</span>
+        <input
+          id="volume"
+          name="volume"
+          type="range"
+          min="-100"
+          max="100"
+          value="0"
+        />
+      </section>
+    </section>
+    <button id="toggleSettings">⚙</button>
 
     <audio id="silentLoop" src="empty.wav" loop></audio>
 
@@ -83,11 +218,108 @@
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.min.js"></script>
 
     <script>
+      let beepTargets = [0, 30];
+
+      try {
+        const on = location.search
+          .substr(1)
+          .split(",")
+          .map((second) => {
+            const s = parseInt(second);
+            if (s > 60 || s < 0 || isNaN(second)) {
+              throw "invalid time in query";
+            }
+            return s;
+          });
+        beepTargets = on.sort((a, b) => a - b);
+      } catch {}
+
+      const volume = localStorage.getItem("volume") || 0;
+
       const remainingSpan = document.getElementById("time-remaining");
       const muteButton = document.getElementById("muteButton");
       const silentLoop = document.getElementById("silentLoop");
+      const settings = document.getElementById("settings");
+      const settingsButton = document.getElementById("toggleSettings");
+      settingsButton.addEventListener("click", () => {
+        if (document.body.dataset.settingsVisible === "false") {
+          document.body.dataset.settingsVisible = true;
+        } else {
+          document.body.dataset.settingsVisible = false;
+        }
+      });
+      const beepTargetForm = document.getElementById("beepTargets");
+      const addBeepTarget = document.getElementById("addBeepTarget");
+      addBeepTarget.addEventListener("click", () => {
+        beepTargets.push(beepTargets[beepTargets.length - 1]);
+        buildInputsForBeepTargets();
+      });
+      const removeBeepTarget = document.getElementById("removeBeepTarget");
+      removeBeepTarget.addEventListener("click", () => {
+        if (beepTargets.length > 1) {
+          beepTargets.splice(beepTargets.length - 1);
+          buildInputsForBeepTargets();
+        }
+      });
+
+      const volumeSlider = document.getElementById("volume");
+      volumeSlider.value = volume;
+      volumeSlider.addEventListener("change", () => {
+        osc.volume.value = volumeSlider.value;
+        localStorage.setItem("volume", volumeSlider.value);
+      });
+
+      function setUrlToBeepTargets() {
+        const newURL = new URL(window.location.href);
+        const query = beepTargets.join(",");
+        newURL.search = query === "0,30" ? "" : beepTargets.join(",");
+        window.history.replaceState({ path: newURL.href }, "", newURL.href);
+      }
+
+      function buildInputsForBeepTargets() {
+        const existingInputs = Array.from(
+          beepTargetForm.querySelectorAll("input")
+        );
+        if (existingInputs.length === beepTargets.length) {
+          existingInputs.forEach((input, index) => {
+            const prev = beepTargets[index - 1];
+            const next = beepTargets[index + 1];
+            input.type = "number";
+            input.value = beepTargets[index];
+            input.min = prev !== undefined ? prev : 0;
+            input.max = next !== undefined ? next : 60;
+          });
+        } else {
+          beepTargetForm.innerHTML = "";
+          const inputs = beepTargets.map((target, index) => {
+            const prev = beepTargets[index - 1];
+            const next = beepTargets[index + 1];
+            const input = document.createElement("input");
+            input.type = "number";
+            input.value = target;
+            input.min = prev !== undefined ? prev : 0;
+            input.max = next !== undefined ? next : 60;
+            beepTargetForm.appendChild(input);
+            input.addEventListener("change", () => {
+              beepTargets[index] = parseInt(input.value);
+              beepTargets = beepTargets.sort((a, b) => a - b);
+              setUrlToBeepTargets();
+              buildInputsForBeepTargets();
+            });
+          });
+        }
+        if (beepTargets.length <= 1) {
+          removeBeepTarget.setAttribute("disabled", true);
+        } else {
+          removeBeepTarget.removeAttribute("disabled");
+        }
+        setUrlToBeepTargets();
+      }
+
+      buildInputsForBeepTargets();
 
       const osc = new Tone.Oscillator().toDestination();
+      osc.volume.value = 50;
 
       let isMuted = true;
       muteButton.addEventListener("click", () => {
@@ -108,12 +340,18 @@
         const time = parseInt(
           decodeURIComponent(renderedTimestamp).match(/\>(\d+)\</)[1]
         );
-        if (time === 0 || time === 30) {
+        if (beepTargets.indexOf(time) !== -1) {
           if (!isMuted) {
             osc.start().stop("+0.5");
           }
         }
-        remainingSpan.innerHTML = 30 - (time % 30);
+        // this assumes that beepTargets is sorted ascending
+        let nextTarget = beepTargets.find((target) => target > time);
+        if (nextTarget === undefined) {
+          nextTarget = 60 + beepTargets[0];
+        }
+
+        remainingSpan.innerHTML = nextTarget - time;
       }
 
       time_is_widget.init({
