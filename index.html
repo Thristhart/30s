@@ -226,7 +226,7 @@
           .split(",")
           .map((second) => {
             const s = parseInt(second);
-            if (s > 60 || s < 0 || isNaN(second)) {
+            if (s > 60 || s < 0 || isNaN(s)) {
               throw "invalid time in query";
             }
             return s;
