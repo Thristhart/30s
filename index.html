@@ -265,7 +265,7 @@
       const volumeSlider = document.getElementById("volume");
       volumeSlider.value = volume;
       volumeSlider.addEventListener("change", () => {
-        osc.volume.value = volumeSlider.value;
+        //osc.volume.value = volumeSlider.value;
         localStorage.setItem("volume", volumeSlider.value);
       });
 
@@ -319,7 +319,7 @@
       buildInputsForBeepTargets();
 
       const osc = new Tone.Oscillator().toDestination();
-      osc.volume.value = 50;
+      //osc.volume.value = 50;
 
       let isMuted = true;
       muteButton.addEventListener("click", () => {
